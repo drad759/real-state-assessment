@@ -1,0 +1,46 @@
+{
+  "industry": "realEstate",
+  "qualifyingQuestions": [
+    {
+      "purpose": "determine_property_type",
+      "question": "What type of property are you interested in? (e.g., apartment, villa, plot)"
+    },
+    {
+      "purpose": "determine_budget",
+      "question": "Do you have a specific budget range in mind?"
+    },
+    {
+      "purpose": "determine_location",
+      "question": "Which location or area are you looking at?"
+    },
+    {
+      "purpose": "determine_timeline",
+      "question": "How soon are you looking to make a purchase?"
+    }
+  ],
+  "qualificationCriteria": {
+    "hot": {
+      "conditions": [
+        {"field": "budget", "operator": "exists"},
+        {"field": "timeline", "operator": "matches", "value": "within 1 month|immediately|urgent"},
+        {"field": "propertyType", "operator": "exists"}
+      ]
+    },
+    "cold": {
+      "conditions": [
+        {"field": "budget", "operator": "exists"},
+        {"field": "timeline", "operator": "matches", "value": "3 months|6 months|not sure"},
+        {"field": "propertyType", "operator": "exists"}
+      ]
+    },
+    "invalid": {
+      "conditions": [
+        {"field": "propertyType", "operator": "notExists"},
+        {"field": "budget", "operator": "notExists"}
+      ]
+    }
+  },
+  "initialGreeting": "Hi {name}! I'm your real estate assistant. I can help you find your dream property. Could you tell me what type of property you're looking for?",
+  "fallbackResponse": "I didn't quite get that. Could you please clarify?",
+  "closingMessage": "Thank you for the information! Our team will get in touch with you shortly."
+}
