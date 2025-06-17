@@ -26,7 +26,7 @@ async function createUser(req, res) {
     
     const user = new User({
       username,
-      password, // Note: In a real app, you'd hash this
+      password, 
       role
     });
     

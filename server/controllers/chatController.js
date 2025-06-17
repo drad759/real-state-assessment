@@ -54,7 +54,7 @@ async function sendMessage(req, res) {
       return res.status(400).json({ error: 'No active chat for this lead' });
     }
     
-    // Add user message
+   
     chat.messages.push({
       sender: 'user',
       content
@@ -62,7 +62,7 @@ async function sendMessage(req, res) {
     
     const businessProfile = config.getBusinessProfile(lead.businessIndustry);
     
-    // Generate bot response
+ 
     const botResponse = await generateResponse(chat.messages, businessProfile);
     chat.messages.push({
       sender: 'bot',
@@ -71,10 +71,9 @@ async function sendMessage(req, res) {
     
     await chat.save();
     
-    // Update lead metadata if we've extracted any info
+   
     updateLeadMetadata(lead, chat.messages, businessProfile);
     
-    // Re-classify lead
     const qualification = await qualifyLead(lead.metadata, businessProfile);
     lead.classification = qualification.classification;
     lead.qualificationReason = qualification.reason;
@@ -91,10 +90,10 @@ function updateLeadMetadata(lead, messages, businessProfile) {
   const conversationHistory = messages.map(msg => `${msg.sender}: ${msg.content}`).join('\n');
   const lastUserMessage = messages.filter(m => m.sender === 'user').pop()?.content || '';
   
-  // Initialize metadata if not exists
+ 
   lead.metadata = lead.metadata || {};
   
-  // Core real estate fields extraction
+
   const propertyTypeMatch = lastUserMessage.match(/(apartment|flat|villa|house|plot|land|commercial|residential)/i);
   const budgetMatch = lastUserMessage.match(/(\d+\s*(lakh|lac|cr|crore|thousand|k|million|mn)|₹\s*\d+|rs\.?\s*\d+|\$\s*\d+)/i);
   const locationMatch = lastUserMessage.match(/(in|at|near|around|close to|within)\s+([\w\s]+?)(?=\s|$|,|\.)/i);
@@ -103,14 +102,14 @@ function updateLeadMetadata(lead, messages, businessProfile) {
   const sizeMatch = lastUserMessage.match(/(\d+)\s*(sq\s*ft|square feet|sqft|sq yard|sq m|square meter|acre|gunta)/i);
   const intentMatch = lastUserMessage.match(/(invest|investment|buy|purchase|own|live in|shift|move|relocate)/i);
 
-  // Update metadata with extracted values
+ 
   if (propertyTypeMatch) {
     lead.metadata.propertyType = propertyTypeMatch[0].toLowerCase();
   }
   
   if (budgetMatch) {
     lead.metadata.budget = budgetMatch[0].replace(/\s+/g, ' ').trim();
-    // Convert all budgets to standard format (e.g., "70 lakhs")
+    
     lead.metadata.budget = lead.metadata.budget
       .replace(/lac/gi, 'lakh')
       .replace(/rs\.?|₹|\$/gi, '')
@@ -121,10 +120,10 @@ function updateLeadMetadata(lead, messages, businessProfile) {
   
   if (locationMatch) {
     lead.metadata.location = locationMatch[2].trim();
-    // Special case for Mumbai
+  
     if (lastUserMessage.match(/mumbai|bombay/i)) {
       lead.metadata.location = 'Mumbai';
-      // Extract specific areas
+     
       const mumbaiAreaMatch = lastUserMessage.match(/(bandra|andheri|powai|thane|navi mumbai|lower parel|worli|dadar)/i);
       if (mumbaiAreaMatch) {
         lead.metadata.specificArea = mumbaiAreaMatch[0];
@@ -152,19 +151,19 @@ function updateLeadMetadata(lead, messages, businessProfile) {
     lead.metadata.isInvestment = /invest|investment/i.test(intentMatch[0]);
   }
   
-  // Conversation analysis flags
+ 
   lead.metadata.hasDetailedRequirements = messages.some(m => 
     m.sender === 'user' && m.content.split(' ').length > 15
   );
   
   lead.metadata.engagementLevel = messages.filter(m => m.sender === 'user').length;
   
-  // Full conversation context for AI analysis
+  
   lead.metadata.conversationSummary = conversationHistory;
   lead.metadata.lastMessage = lastUserMessage;
   lead.metadata.lastMessageLength = lastUserMessage.split(' ').length;
   
-  // Timestamp updates
+
   lead.metadata.lastUpdated = new Date();
   if (!lead.metadata.firstContact) {
     lead.metadata.firstContact = new Date();

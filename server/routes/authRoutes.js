@@ -7,20 +7,18 @@ const User = require('../models/User');
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
-    // Find user by username
+
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // In a real app, you would hash the password and compare
-    // For this example, we're doing simple comparison
+  
     if (user.password !== password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    // Create JWT token
+  
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -41,27 +39,26 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// User registration (typically admin-only, but included here for completeness)
+
 router.post('/register', async (req, res) => {
   try {
     const { username, password, role } = req.body;
     
-    // Check if user exists
+
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ error: 'Username already exists' });
     }
-    
-    // Create new user
+  
     const user = new User({
       username,
-      password, // Note: In production, hash this password
+      password, 
       role: role || 'agent'
     });
     
     await user.save();
     
-    // Generate token for immediate login
+   
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
